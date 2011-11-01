@@ -1,0 +1,51 @@
+/*
+ * DTrace data collection testing: syscalls and processes.
+ */
+
+fbt::thread_create:entry
+/pid != $pid/
+{
+   printf("\n--Trace:\n");
+   printf("--------\n");
+   trace(arg0);
+   printf("\n--KStack:\n");
+   printf("--------\n");
+   stack(2);
+   printf("\n--UStack:\n");
+   printf("--------\n");
+   ustack(2);
+}
+
+
+/* collect process information from all syscalls */
+syscall::*:
+/pid != $pid/
+{
+    printf("\nevent:{\n");
+    printf("  timestamp:%d,\n", walltimestamp);
+    printf("  cpuid:%d,\n", curcpu->cpu_id);
+    printf("  call:%s,\n", probefunc);
+    printf("  thread: {\n");
+    printf("    tid:%d,\n", tid);
+    printf("    pid:%d,\n",curpsinfo->pr_pid);
+    printf("    ppid:%d,\n",curpsinfo->pr_ppid);
+    printf("    uid:%d,\n", uid);
+    printf("    proc_name:%s,\n", curpsinfo->pr_fname);
+    printf("  },");
+           
+    printf("}\n\n");
+
+    /* unavailable data on osx...  hmm...
+     * printf("  start:%d,\n", curpsinfo->pr_start.tv_nsec);
+     * printf("  processor_type:%s,\n", curcpu->cpu_info.pi_processor_type);
+     * printf("  fpu_type:%s,\n", curcpu->cpu_info.pi_fputypes);
+     * printf("  state:%d,\n", curcpu->cpu_info.pi_state);
+     * printf("  clock:%d,\n", curcpu->cpu_info.pi_clock);
+     */
+}
+
+syscall::open:entry
+/pid != $pid/
+{
+    printf("\n  file: { path:%s },\n", fds[arg0].fi_pathname);
+}
