@@ -1,4 +1,4 @@
-vwatchd - Virtualeyes Watcher Daemon
+vwatchd - Virtualeyes Watching Daemon
 ---
 vwatchd is a daemon that collects and records system information for analysis by virtualeyes.  The 
 underlying mechanism for collection is SystemTap for Linux or DTrace for Mac OS and BSD.  The daemon 
@@ -51,12 +51,13 @@ saved directly to a storage server (e.g. MySQL, MongoDB, etc.).
 
 The client application, Virtualeyes, currently reads all neccesary data directly from the database.
 
-Another component, vservd, is in the planning phase.  vservd will:
-    Proxy data requests to the DB server
-	Perform basic data clustering and statistics
-	Destroy redundant and historic data (once it has been added to any relevant statistical datasets)
-	FUTURE: Render statistical graphs for easy web integration and server-side rendering (Qt painter)
-	FUTURE: Provide real-time alerts
+Another component, vservd, is in the planning phase with the following goals:
+
+ - Proxy data requests to the DB server
+ - Perform basic data clustering and statistics
+ - Destroy redundant and historic data (once it has been added to any relevant statistical datasets)
+ - Render graphs for easy web integration and server-side rendering (Qt painter)
+ - Provide real-time alerts
 
 
 Coding Conventions
