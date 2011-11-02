@@ -35,7 +35,7 @@ Runtime Dependancies
 ---
   - Linux:   SystemTap and debug symbols for the running kernel.
   - MacOS:   DTrace (included with XCode).
-  - FreeBSD: DTrace and a kernel built with KDTRACE\_HOOKS, KDTRACE_FRAME and DDB\_CTF.
+  - FreeBSD: DTrace and a kernel built with KDTRACE\_HOOKS, KDTRACE\_FRAME and DDB\_CTF.
 
 
 Configuration
