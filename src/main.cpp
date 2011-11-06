@@ -58,9 +58,14 @@ int main(int argc, char *argv[])
 #endif
 
     // load config file
+
     // spawn subprocesses
-    sleep(100);
-    
-    // spawn io service
+
+    // allow other threads to execute (or run io_service?)
+    while (true)
+        sleep(100);
+
+    // never reached
+
     exit(EXIT_SUCCESS);
 }

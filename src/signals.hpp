@@ -15,7 +15,6 @@
 #include <pthread.h>
 
 namespace vwatch {
-    
 
     class signals {
 

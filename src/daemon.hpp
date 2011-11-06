@@ -9,6 +9,9 @@
 // @date    11/3/2011
 ///////////////////////////////////////////////////////
 
+#ifndef DAEMON_HPP_VWATCHD
+#define DAEMON_HPP_VWATCHD
+
 #define PIDFILE_PATH "/tmp/vwatchd.pid"
 
 namespace vwatch {
@@ -18,8 +21,12 @@ namespace vwatch {
     public:
           static void init();  
           static void shutdown();  
-      private:
+    private:
           static int pidfile;
     };
     
 }
+
+
+
+#endif

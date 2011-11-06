@@ -33,11 +33,11 @@ void daemon::init() {
     if ((pid = fork()) < 0) {
         // parent: fork failure
         printf("Error: Unable to fork child process.  Reason: %s\n", strerror(errno));
-        close(pidfile);
+        shutdown();
         exit(EXIT_FAILURE);
     } else if (pid > 0) {
         // parent: successfully forked; exit so child will be reparented.
-        close(pidfile);
+        shutdown();
         exit(EXIT_SUCCESS);
     }
     // now in child process
@@ -71,7 +71,7 @@ void daemon::init() {
     if ((sid = setsid()) == -1) {
         // fail
         printf("Error:  Unable to create process session group.  Reason: %s\n", strerror(errno));
-        close(pidfile);
+        shutdown();
         exit(EXIT_FAILURE);
     }
 
@@ -85,6 +85,9 @@ void daemon::init() {
 /// @brief cleanup after the daemon
 void daemon::shutdown() 
 {
+    // close and delete the pidfile
     close(pidfile);
+    unlink(PIDFILE_PATH);
 }    
-    
+
+

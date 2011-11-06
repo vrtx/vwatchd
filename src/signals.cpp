@@ -30,9 +30,13 @@ void signals::register_handlers()
     // block signals a daemon shouldn't handle
     sigemptyset(&initial_sigmask);
     sigemptyset(&blocked_signals);
-    sigaddset(&blocked_signals, SIGTSTP);
-    sigaddset(&blocked_signals, SIGTTOU);
-    sigaddset(&blocked_signals, SIGTTIN);
+    sigaddset(&blocked_signals, SIGTTOU);  // handle stdout writes while daemonized
+    sigaddset(&blocked_signals, SIGTTIN);  // handle stdin reads while daemonized
+    sigaddset(&blocked_signals, SIGHUP);   // handle tty hangup
+    sigaddset(&blocked_signals, SIGTSTP);  // handle C-z
+    sigaddset(&blocked_signals, SIGQUIT);
+    sigaddset(&blocked_signals, SIGUSR1);
+    sigaddset(&blocked_signals, SIGUSR2);
     pthread_sigmask(SIG_BLOCK, &blocked_signals, &initial_sigmask);
 
     // spawn the signal handling thread
@@ -40,8 +44,6 @@ void signals::register_handlers()
         // error
         printf("Error: Unable to create thread to handle posix signals.  Reason: %s", strerror(errno));
     }
-
-    // TODO: LEFT OFF HERE
 
     // struct sigaction signal_handler;
 
@@ -62,6 +64,8 @@ void signals::register_handlers()
 /// @brief Dispatch a POSIX signal to the handler function
 void signals::dispatch_signal(const int a_sig)
 {
+    // LEFT OFF HERE: test proper signal dispatching with subprocesses
+    syslog(LOG_NOTICE, "here");
     switch(a_sig) {
         case SIGHUP:
             syslog(LOG_NOTICE, "Received SIGHUP. \n", a_sig);
@@ -116,6 +120,7 @@ void signals::action_reload(int a_sig)
 /// @brief signal handler thread
 void *signals::handler_thread(void *unused)
 {
+
     int sig;    // signal delivered from OS
 
     // wait for a signal
