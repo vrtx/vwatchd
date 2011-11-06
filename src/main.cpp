@@ -9,16 +9,11 @@
 // @date    11/1/2011
 ///////////////////////////////////////////////////////
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <syslog.h>
-#include <unistd.h>
-#include <errno.h>
-#include <sys/stat.h>
-
+#include "common.hpp"
 #include "version.hpp"
+#include "signals.hpp"
 #include "settings.hpp"
+#include "daemon.hpp"
 
 using namespace vwatch;
 
@@ -26,33 +21,20 @@ using namespace vwatch;
 ///        signal handlers and then init vwatchd.
 int main(int argc, char *argv[])
 {
-    pid_t pid;
-    pid_t sid;
-
+    // parse cli args
     settings::parse_cli_args(argc, argv);
 
-    // fork the daemon process
-    pid = fork();
+    // register signal handlers
+    signals::register_handlers();
+    
+    // daemonize
+    if (settings::runtime.daemon_mode)
+        daemon::init();
 
-    if (pid < 0) {
-        // parent: fork failure
-        printf("Error: Unable to fork child process.  Reason: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
-    } else if (pid > 0) {
-        exit(EXIT_SUCCESS);
-    }
-
-    // become the session leader
-    if ((sid = setsid()) == -1) {
-        // fail
-        printf("Error:  Unable to create process session group.  Reason: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
-    }
-
-    // set default file mask
+    // ensure default mask so children can rwx at will
     umask(0);
 
-    // change cwd
+    // change cwd to root
     if ((chdir("/")) < 0) {
         printf("Error:  Unable to change to root directory.  Reason: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
@@ -60,13 +42,10 @@ int main(int argc, char *argv[])
 
     // initialize syslog
     openlog("vwatchd", LOG_CONS | LOG_NDELAY | LOG_PERROR | LOG_PID, LOG_USER);
-    settings::runtime.debug_mode ? 
-        setlogmask(LOG_UPTO(LOG_DEBUG)) : setlogmask(LOG_UPTO(LOG_NOTICE));
-
-    // close stdio
-    close(STDIN_FILENO);
-    close(STDOUT_FILENO);
-    close(STDERR_FILENO);
+    if (settings::runtime.debug_mode) 
+        setlogmask(LOG_UPTO(LOG_DEBUG));
+    else
+        setlogmask(LOG_UPTO(LOG_NOTICE));
 
     // print initialization message
     syslog(LOG_NOTICE, "Starting vwatchd version %s", VWATCHD_VERSION_STRING);
@@ -78,5 +57,10 @@ int main(int argc, char *argv[])
     #error "Watcher type not defined.  Set -DVWATCH_STAP for Linux systems or -DVWATCH_DTRACE for MacOS, Solaris or *BSD."
 #endif
 
+    // load config file
+    // spawn subprocesses
+    sleep(100);
+    
+    // spawn io service
     exit(EXIT_SUCCESS);
 }
