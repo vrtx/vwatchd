@@ -24,21 +24,12 @@ int main(int argc, char *argv[])
     // parse cli args
     settings::parse_cli_args(argc, argv);
 
-    // register signal handlers
-    signals::register_handlers();
-    
-    // daemonize
+    // daemonize (and close stdio)
     if (settings::runtime.daemon_mode)
         daemon::init();
 
-    // ensure default mask so children can rwx at will
-    umask(0);
-
-    // change cwd to root
-    if ((chdir("/")) < 0) {
-        printf("Error:  Unable to change to root directory.  Reason: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
-    }
+    // register signal handlers
+    signals::register_handlers();
 
     // initialize syslog
     openlog("vwatchd", LOG_CONS | LOG_NDELAY | LOG_PERROR | LOG_PID, LOG_USER);
@@ -66,6 +57,5 @@ int main(int argc, char *argv[])
         sleep(100);
 
     // never reached
-
     exit(EXIT_SUCCESS);
 }

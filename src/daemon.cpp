@@ -21,7 +21,7 @@ void daemon::init() {
 
     pid_t pid;
     pid_t sid;
-    char tmp_pid_str[20]; // up to a 64-bit int.
+    char tmp_pid_str[20]; // up to a 64-bit pid string
 
     if (getppid() == 1) {
         // already daemonized (e.g. by os init system)
@@ -32,12 +32,10 @@ void daemon::init() {
     // fork the daemon process
     if ((pid = fork()) < 0) {
         // parent: fork failure
-        printf("Error: Unable to fork child process.  Reason: %s\n", strerror(errno));
-        shutdown();
+        cerr << "Error: Unable to fork child process.  Reason: " << strerror(errno) << endl;
         exit(EXIT_FAILURE);
     } else if (pid > 0) {
         // parent: successfully forked; exit so child will be reparented.
-        shutdown();
         exit(EXIT_SUCCESS);
     }
     // now in child process
@@ -45,22 +43,20 @@ void daemon::init() {
     // create a pid file to prevent multiple daemons from running
     if ((pidfile = open(PIDFILE_PATH, O_RDWR|O_CREAT, 0600)) == -1 ) {
         // failed to create pid file
-        syslog(LOG_WARNING, "Error: vWatchd appears to already be running, or was not "
-                          "cleanly shutdown.  Reason: unable to create pid file. If"
-                          "vWatchd is not actually running, remove %s and try again.",
-                          PIDFILE_PATH);
-        exit(EXIT_FAILURE);
+        cerr << "Unable to start vwatchd:  Failed to to create pid file.  Ensure"
+                "vwatchd is not already running and remove " <<  PIDFILE_PATH << "." << endl;
+        exit(EXIT_FAILURE); // exit without removing existing pidfile
     }
 
+    // BB FIXME: ensure 
     // lock the pidfile to ensure exclusive access
     if (lockf(pidfile, F_TLOCK, 0) == -1)
     {
         // failed to lock the pidfile exclusively; likely another process running.
-        syslog(LOG_WARNING, "Error: vWatchd appears to already be running, or was not "
-                          "cleanly shutdown. Reason: unable to lock pid file. If "
-                          "vWatchd is not running, remove %s and try again.", 
-                          PIDFILE_PATH);
-        exit(EXIT_FAILURE);
+        cerr << "Unable to start vwatchd: vwatchd is already running or did not "
+                "shutdown gracefully.  Ensure vwatchd is not running, remove "
+                << PIDFILE_PATH << " and try again." << endl;
+        exit(EXIT_FAILURE); // exit without removing existing pidfile
     }
 
     // write out the pidfile, leaving it open until the daemon exits.
@@ -70,23 +66,39 @@ void daemon::init() {
     // create session for child process
     if ((sid = setsid()) == -1) {
         // fail
-        printf("Error:  Unable to create process session group.  Reason: %s\n", strerror(errno));
-        shutdown();
-        exit(EXIT_FAILURE);
+        cerr << "Error:  Unable to create process session group.  Reason: " << strerror(errno) << endl;
+        goto clean_error;
+    }
+
+    // propagate file creation mask to children
+    umask(0);
+
+    // change cwd to root
+    if ((chdir("/")) < 0) {
+        cerr << "Error:  Unable to change to root directory.  Reason: " << strerror(errno) << endl;
+        goto clean_error;
     }
 
     // close stdio
     close(STDIN_FILENO);
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
-    
+
+    return;
+
+clean_error:
+    shutdown();
+    exit(EXIT_FAILURE);
+    return; // not reached
+
 }
 
 /// @brief cleanup after the daemon
 void daemon::shutdown() 
 {
     // close and delete the pidfile
-    close(pidfile);
+    if (pidfile > 0)
+        close(pidfile);
     unlink(PIDFILE_PATH);
 }    
 
