@@ -45,6 +45,13 @@ ELSE()
     ENDIF()
 ENDIF()
 
+SET(SHARED_SRCS ${SRCS} ${HDRS})
+LIST(REMOVE_ITEM SHARED_SRCS main.cpp)
+IF (BUILD_SHARED)
+    add_library(vwatchd_core SHARED ${SHARED_SRCS})
+ENDIF()
+
+
 # link libs to executable
 TARGET_LINK_LIBRARIES(vwatchd
     pthread

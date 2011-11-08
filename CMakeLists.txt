@@ -16,3 +16,4 @@ add_definitions(-g)
 
 # include source directory
 add_subdirectory(src)
+add_subdirectory(tests)

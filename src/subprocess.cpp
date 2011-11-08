@@ -50,7 +50,8 @@ subprocess *subprocess::spawn(const string &path, const string &args,
 
     pid_t pid;
     subprocess *retval = new subprocess;
-        
+    int exec_status = 0;
+
     // fork to the child process
     if ((pid = fork()) < 0) {
         // parent: fork failure
@@ -67,9 +68,12 @@ subprocess *subprocess::spawn(const string &path, const string &args,
         close(retval->err_write);
 
         // wait for process to finish
-//        pthread_join(); //timed
+        wait(&exec_status);
+
+        // copy all output to the supplied arguments
+
     }
-    
+
     // now in the child process
     // close all open FDs except pipes for writing
     for (int i = getdtablesize(); i >= 0; --i) {
