@@ -37,6 +37,9 @@ namespace vwatch {
         // get output from a subprocess
         int get_output(string &out, string &err, int &ret);
 
+        // print the status of the subprocess
+        string get_status() const;
+
     private:
         // instance members
         int out_pipe[2];    // pipe for child -> parent output

@@ -107,4 +107,21 @@ int subprocess::get_output(string &out, string &err, int &ret)
     return 0;
 }
 
-
+/// @brief   Close any FDs the child should not inherit
+/// @return  Human readble description of the subprocess and state
+///          1 if timeout expired
+///          2 if output size threshold was exceeded
+string subprocess::get_status() const
+{
+    string retval;
+    retval += "Subprocess:\n";
+    retval += "-----------\n";
+    retval += "Name: asdf\n";
+    retval += "Pid: 123\n";
+    retval += "Parent Pid: 123\n";
+    retval += "Time Running: 10s\n";
+    retval += "Bytes Received: 2048\n";
+    retval += "State: Running\n";
+    retval += "ExitCode: (null)\n";
+    return retval;
+}

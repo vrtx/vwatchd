@@ -7,14 +7,25 @@
 # Project setup
 project(vwatchd)
 
-# Include vwatchd headers and components
-enable_testing()
-include_directories(${CMAKE_SOURCE_DIR}/src)
-link_directories(${CMAKE_BINARY_DIR}/src)
+if(enable_tests)
 
-# Build an executable file
-add_executable(subproc_stdio subproc_stdio.cpp)
-target_link_libraries(subproc_stdio vwatchd_core)
-add_test(NAME SubprocessStdio 
-         COMMAND ${CMAKE_CURRENT_BINARY_DIR}/subproc_stdio)
+    # # Include vwatchd headers and objects
+    # link_directories(${CMAKE_BINARY_DIR}/src)
+    # include_directories(${CMAKE_SOURCE_DIR}/src)
 
+    enable_testing()
+
+    add_executable(unittests
+        _boost_test_runner.cpp
+        subprocess_tests.cpp)
+
+    target_link_libraries(unittests
+        boost_unit_test_framework-mt
+        pthread
+        vwatchd_core)
+
+    ADD_TEST(unittests "VWatchd Unit Tests")
+
+    INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src)
+
+endif()

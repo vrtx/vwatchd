@@ -47,7 +47,7 @@ ENDIF()
 
 SET(SHARED_SRCS ${SRCS} ${HDRS})
 LIST(REMOVE_ITEM SHARED_SRCS main.cpp)
-IF (BUILD_SHARED)
+IF (enable_tests)
     add_library(vwatchd_core SHARED ${SHARED_SRCS})
 ENDIF()
 

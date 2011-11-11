@@ -31,6 +31,7 @@ namespace vwatch {
 
     public:
         static sig_handler_fn sig_handler_table[VW_SIGMAX];
+
         static void register_handlers();
         static void action_ignore(const int a_sig);
         static void action_exit(const int a_sig);
