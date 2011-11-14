@@ -15,6 +15,10 @@
 #include "settings.hpp"
 #include "daemon.hpp"
 
+//testing
+#include "subprocess.hpp"
+#include "trace_parser.hpp"
+
 using namespace vwatch;
 
 /// @brief Main entry point.  Parse CLI args, daemonize, register 
@@ -53,6 +57,14 @@ int main(int argc, char *argv[])
     // spawn subprocesses
 
     // allow other threads to execute (or run io_service?)
+
+    string stdout, stderr;
+    int retcode = 0;
+    trace_parser echo_test_parser;
+    subprocess *echo = subprocess::spawn("sleep", echo_test_parser, "100");
+
+    echo->get_complete_output(stdout, stderr, retcode);
+    syslog(LOG_NOTICE, "Got ps output: %s\n", stdout.c_str());
     while (true)
         sleep(100);
 

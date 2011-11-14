@@ -38,6 +38,7 @@ namespace vwatch {
         static void action_child(const int a_sig);
         static void action_reload(const int a_sig);
         static void action_unhandled(const int a_sig);
+        static void unregister_handlers();
 
     private:
         static sigset_t initial_sigmask;

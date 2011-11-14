@@ -16,6 +16,7 @@
 
 // Includes
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -25,6 +26,8 @@
 #include <fcntl.h>
 #include <iostream>
 #include <string>
+#include <map>
+#include <list>
 
 // Common Namespaces
 using namespace std;

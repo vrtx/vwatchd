@@ -128,3 +128,29 @@ void *signals::handler_thread(void *unused)
     // never reached
     return NULL;
 }
+
+/// @brief signal handler thread
+void signals::unregister_handlers()
+{
+    int err = 0;
+
+    // kill the handler thread
+    if ((err = pthread_cancel(handler_thread_id)) != 0) {
+        // error
+        syslog(LOG_CRIT, "Failed to cancel handler thread.  Reason: %s \n", 
+                          strerror(err));
+        return;
+    }
+
+    if ((err = pthread_join(handler_thread_id, NULL)) != 0) {
+        syslog(LOG_WARNING, "Couldn't join to thread pending cancellation.  Reason: %s \n", 
+                          strerror(err));
+        return;
+
+    }
+
+    // restore signal mask
+    pthread_sigmask(SIG_SETMASK, &initial_sigmask, NULL);
+
+}
+
