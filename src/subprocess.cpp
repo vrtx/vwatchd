@@ -53,7 +53,6 @@ subprocess *subprocess::spawn(const string &path, abstract_parser &parser,
     // helpers
     subprocess *retval = new subprocess;    // subprocess object
     pid_t pid;                              // pid of the child
-    int exec_status = 0;                    // status of subprocess
     char *new_env[] = { NULL };             // subprocess environment
     std::list <const char *> tmp_args;
 
@@ -96,20 +95,21 @@ subprocess *subprocess::spawn(const string &path, abstract_parser &parser,
 
         // close all open FDs except pipes for writing
         for (int i = getdtablesize(); i >= 0; --i) {
-
             if (i != retval->out_write_ &&
                 i != retval->err_write_) {
                 close(i);
+            } else {
+                // syslog(LOG_CRIT, "open fd: %d", i);
             }
-
         }
-
+        
         // duplicate pipes to stdio
         dup2(retval->out_write_, STDOUT_FILENO);
         dup2(retval->err_write_, STDERR_FILENO);
-
         execve(retval->path_.c_str(), const_cast <char * const *>(raw_argv), new_env);
+
         // never reached
+        exit(EXIT_SUCCESS);
     }
     // parent: successfully forked
 
@@ -122,7 +122,7 @@ subprocess *subprocess::spawn(const string &path, abstract_parser &parser,
     int sz = 1;
     int err = 0;
     while ((sz < 0 && err == EINTR) || sz > 0) {
-        // while reading and 
+        // while reading and not interrupted
         // read from stdout
         sz = ::read(retval->out_read_, reinterpret_cast <void *>(buf), 1024);
         if (sz < 0) {
@@ -136,11 +136,9 @@ subprocess *subprocess::spawn(const string &path, abstract_parser &parser,
         } else if (sz > 0) {
             syslog(LOG_NOTICE, "subproc output: %s (%d bytes).\n", buf, sz);
         }
-        syslog(LOG_NOTICE, "read %d bytes: %s.\n", sz, buf);
+        if (!err)
+            syslog(LOG_NOTICE, "read %d bytes: %s.\n", sz, buf);
     }
-
-    // wait for process to finish
-    wait(&exec_status);
 
     delete[] buf;
     return retval;

@@ -34,6 +34,7 @@ void signals::register_handlers()
     sigaddset(&blocked_signals, SIGTTIN);  // handle stdin reads while daemonized
     sigaddset(&blocked_signals, SIGHUP);   // handle tty hangup
     sigaddset(&blocked_signals, SIGTSTP);  // handle C-z
+    sigaddset(&blocked_signals, SIGCHLD);  // handle sigchild
     sigaddset(&blocked_signals, SIGINT);
     sigaddset(&blocked_signals, SIGQUIT);
     sigaddset(&blocked_signals, SIGUSR1);
@@ -47,6 +48,7 @@ void signals::register_handlers()
     sig_handler_table[SIGINT] = action_exit;
     sig_handler_table[SIGUSR1] = action_ignore;
     sig_handler_table[SIGUSR2] = action_ignore;
+    sig_handler_table[SIGCHLD] = action_child;
 
     // spawn the signal handling thread
     if (pthread_create(&handler_thread_id, NULL, handler_thread, NULL) != 0) {
@@ -72,7 +74,9 @@ void signals::action_exit(int a_sig)
 /// @brief handle a sigchld signal from a child
 void signals::action_child(int a_sig)
 {
+    // wait for process to finish
     syslog(LOG_NOTICE, "Child process '%s' has exited %d.\n", "Name", a_sig);
+    wait(NULL);
 }
 
 /// @brief signal handler to reload the process

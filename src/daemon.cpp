@@ -14,14 +14,13 @@
 
 using namespace vwatch;
 
-int daemon::pidfile = 0;
+FILE *daemon::pidfile = 0;
 
 /// @brief start the process a daemon (fork, set sid/umask, close stdio)
 void daemon::init() {
 
     pid_t pid;
     pid_t sid;
-    char tmp_pid_str[20]; // up to a 64-bit pid string
 
     if (getppid() == 1) {
         // already daemonized (e.g. by os init system)
@@ -41,17 +40,15 @@ void daemon::init() {
     // now in child process
 
     // create a pid file to prevent multiple daemons from running
-    if ((pidfile = open(PIDFILE_PATH, O_RDWR|O_CREAT, 0600)) == -1 ) {
+    if ((pidfile = fopen(PIDFILE_PATH, "w+")) == NULL ) {
         // failed to create pid file
         cerr << "Unable to start vwatchd:  Failed to to create pid file.  Ensure"
                 "vwatchd is not already running and remove " <<  PIDFILE_PATH << "." << endl;
         exit(EXIT_FAILURE); // exit without removing existing pidfile
     }
 
-    // BB FIXME: ensure 
     // lock the pidfile to ensure exclusive access
-    if (lockf(pidfile, F_TLOCK, 0) == -1)
-    {
+    if (flock(fileno(pidfile), LOCK_EX | LOCK_NB) == -1) {
         // failed to lock the pidfile exclusively; likely another process running.
         cerr << "Unable to start vwatchd: vwatchd is already running or did not "
                 "shutdown gracefully.  Ensure vwatchd is not running, remove "
@@ -60,8 +57,7 @@ void daemon::init() {
     }
 
     // write out the pidfile, leaving it open until the daemon exits.
-    sprintf(tmp_pid_str,"%d\n",getpid());
-    write(pidfile, tmp_pid_str, strlen(tmp_pid_str));
+    fprintf(pidfile,"%d",getpid());
 
     // create session for child process
     if ((sid = setsid()) == -1) {
@@ -98,7 +94,7 @@ void daemon::shutdown()
 {
     // close and delete the pidfile
     if (pidfile > 0)
-        close(pidfile);
+        fclose(pidfile);
     unlink(PIDFILE_PATH);
 }    
 

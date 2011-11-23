@@ -22,7 +22,7 @@ namespace vwatch {
           static void init();  
           static void shutdown();  
     private:
-          static int pidfile;
+          static FILE *pidfile;
     };
     
 }
