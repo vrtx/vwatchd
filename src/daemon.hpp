@@ -5,28 +5,21 @@
 // All Rights Reserved
 //
 // @brief   Daemonizing code
-// @author  ben
-// @date    11/3/2011
 ///////////////////////////////////////////////////////
 
-#ifndef DAEMON_HPP_VWATCHD
-#define DAEMON_HPP_VWATCHD
+#pragma once
 
 #define PIDFILE_PATH "/tmp/vwatchd.pid"
 
 namespace vwatch {
     
-    /// @class daemon  Daemonize the vwatchd process
-    class daemon {
-    public:
-          static void init();  
-          static void shutdown();  
-    private:
-          static FILE *pidfile;
-    };
+  // daemonize the vwatchd process
+  class daemon {
+  public:
+    static void init();  
+    static void shutdown();  
+  private:
+    static FILE *pidfile;
+  };
     
 }
-
-
-
-#endif

@@ -1,8 +1,5 @@
-# vwatchd cmake configuration
-#
-# Date Created: 10/31/11
-# Author: Ben Becker
-##############################
+# vwatchd cmake build configuration
+###################################
 
 # Project setup
 project(vwatchd)
@@ -16,7 +13,7 @@ add_definitions(-pedantic)
 add_definitions(-g)
 
 # Package Dependancies
-find_package(Boost REQUIRED)
+# find_package(Boost REQUIRED)
 
 # Build options
 option(enable_tests "Build the unit test suite." OFF)
